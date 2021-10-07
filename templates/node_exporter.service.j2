@@ -1,0 +1,31 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Prometheus node exporter
+After=network-online.target auditd.service
+
+[Service]
+Type=simple
+User={{ node_exporter_system_user }}
+Group={{ node_exporter_system_group }}
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart={{ node_exporter_install_dir }}/node_exporter \
+{% if node_exporter_tls_server_config | length > 0 or node_exporter_http_server_config | length > 0 or node_exporter_basic_auth_users | length > 0 %}
+    --web.config={{ node_exporter_config_dir }}/web.yaml \
+{% endif %}
+    --collector.systemd \
+    --collector.textfile \
+    --collector.textfile.directory={{ node_exporter_textfile_dir }}
+
+SyslogIdentifier=node_exporter
+Restart=always
+RestartSec=1
+
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=yes
+
+[Install]
+WantedBy=multi-user.target

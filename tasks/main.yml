@@ -1,0 +1,29 @@
+---
+# tasks file for v98765_exporter_node
+
+- import_tasks: preinstall.yml
+  become: true
+  tags:
+    - node_exporter_install
+    - node_exporter_configure
+    - node_exporter_run
+
+- import_tasks: install.yml
+  become: true
+  tags:
+    - node_exporter_install
+
+- import_tasks: configure.yml
+  become: true
+  tags:
+    - node_exporter_configure
+
+- name: ensure node_exporter service is started and enabled
+  become: true
+  systemd:
+    daemon_reload: true
+    name: node_exporter
+    enabled: true
+    state: started
+  tags:
+    - node_exporter_run
